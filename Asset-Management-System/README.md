@@ -121,15 +121,14 @@
 
 ```bash
 # 啟動所有服務
-cd ~/Develop/Asset-Management-System
+cd ~/Develop/TPMSystem/Asset-Management-System
 docker compose up -d --build
 
 # 檢查狀態
 docker compose ps
 
-# 後端 API：http://localhost:8000
+# 後端 API：http://localhost:8000/docs
 # 前端網頁：http://localhost:3000
-# API 文件：http://localhost:8000/docs
 ```
 
 ### 初始化類別資料
