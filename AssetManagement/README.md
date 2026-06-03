@@ -121,7 +121,7 @@
 
 ```bash
 # 啟動所有服務
-cd ~/Develop/TPMSystem/Asset-Management-System
+cd ~/Develop/TPMSystem/AssetManagement
 docker compose up -d --build
 
 # 檢查狀態
@@ -148,7 +148,7 @@ docker compose exec backend python import_data.py /app/資產管理.xlsx
 ```
 TPMSystem/
 ├── README.md                       # 專案根目錄說明
-└── Asset-Management-System/
+└── AssetManagement/
     ├── README.md                   # 系統架構文件（完整版）
     ├── docker-compose.yml          # 容器編排（DB + Backend + Frontend）
     ├── backend/

@@ -4,6 +4,6 @@
 
 | 目錄 | 說明 |
 |:-----|:-----|
-| `Asset-Management-System/` | TPM 固定資產管理系統（FastAPI + React + PostgreSQL） |
+| `AssetManagement/` | TPM 固定資產管理系統（FastAPI + React + PostgreSQL） |
 
-👉 詳細文件請見 [Asset-Management-System/README.md](Asset-Management-System/README.md)
+👉 詳細文件請見 [AssetManagement/README.md](AssetManagement/README.md)
