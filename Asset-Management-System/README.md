@@ -147,36 +147,39 @@ docker compose exec backend python import_data.py /app/資產管理.xlsx
 
 ```
 TPMSystem/
-├── docker-compose.yml          # 容器編排（DB + Backend + Frontend）
-├── backend/
-│   ├── main.py                 # FastAPI 主程式 + 路由註冊
-│   ├── database.py             # SQLAlchemy 連線設定
-│   ├── models.py               # 資料表 ORM 模型
-│   ├── schemas.py              # Pydantic 資料驗證
-│   ├── init.sql                # 資料庫初始化腳本
-│   ├── import_data.py          # Excel 資料匯入工具
-│   ├── seed_categories.py      # 類別資料初始化
-│   ├── generate_test_data.py   # 測試資料產生器
-│   └── routers/
-│       ├── assets.py           # 資產台帳 CRUD
-│       ├── inventory.py        # 盤點管理 CRUD
-│       ├── maintenance.py      # 維修保養 CRUD
-│       ├── staff.py            # 人員管理 CRUD
-│       ├── categories.py       # 類別管理 CRUD + 編號產生
-│       └── dashboard.py        # 儀表板統計
-└── frontend/
-    ├── Dockerfile              # NGINX + React 多階段建置
-    ├── nginx.conf              # 反向代理設定
-    ├── src/
-    │   ├── types/index.ts      # TypeScript 介面定義
-    │   ├── api/                # API 通信層（axios）
-    │   ├── layout/Layout.tsx   # 側邊欄導航
-    │   └── pages/
-    │       ├── Dashboard.tsx   # 儀表板（統計圖表）
-    │       ├── AssetsList.tsx  # 資產台帳（列表/編輯）
-    │       ├── InventoryList.tsx   # 盤點管理
-    │       ├── MaintenanceList.tsx # 維修保養
-    │       └── CategoriesPage.tsx  # 類別管理
+├── README.md                       # 專案根目錄說明
+└── Asset-Management-System/
+    ├── README.md                   # 系統架構文件（完整版）
+    ├── docker-compose.yml          # 容器編排（DB + Backend + Frontend）
+    ├── backend/
+    │   ├── main.py                 # FastAPI 主程式 + 路由註冊
+    │   ├── database.py             # SQLAlchemy 連線設定
+    │   ├── models.py               # 資料表 ORM 模型
+    │   ├── schemas.py              # Pydantic 資料驗證
+    │   ├── init.sql                # 資料庫初始化腳本
+    │   ├── import_data.py          # Excel 資料匯入工具
+    │   ├── seed_categories.py      # 類別資料初始化
+    │   ├── generate_test_data.py   # 測試資料產生器
+    │   └── routers/
+    │       ├── assets.py           # 資產台帳 CRUD
+    │       ├── inventory.py        # 盤點管理 CRUD
+    │       ├── maintenance.py      # 維修保養 CRUD
+    │       ├── staff.py            # 人員管理 CRUD
+    │       ├── categories.py       # 類別管理 CRUD + 編號產生
+    │       └── dashboard.py        # 儀表板統計
+    └── frontend/
+        ├── Dockerfile              # NGINX + React 多階段建置
+        ├── nginx.conf              # 反向代理設定
+        ├── src/
+        │   ├── types/index.ts      # TypeScript 介面定義
+        │   ├── api/                # API 通信層（axios）
+        │   ├── layout/Layout.tsx   # 側邊欄導航
+        │   └── pages/
+        │       ├── Dashboard.tsx   # 儀表板（統計圖表）
+        │       ├── AssetsList.tsx  # 資產台帳（列表/編輯）
+        │       ├── InventoryList.tsx   # 盤點管理
+        │       ├── MaintenanceList.tsx # 維修保養
+        │       └── CategoriesPage.tsx  # 類別管理
 ```
 
 ---
