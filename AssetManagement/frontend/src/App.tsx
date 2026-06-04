@@ -5,6 +5,7 @@ import AssetsList from './pages/AssetsList'
 import InventoryList from './pages/InventoryList'
 import MaintenanceList from './pages/MaintenanceList'
 import CategoriesPage from './pages/CategoriesPage'
+import QRCodePage from './pages/QRCodePage'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="inventory" element={<InventoryList />} />
           <Route path="maintenance" element={<MaintenanceList />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="qrcode" element={<QRCodePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

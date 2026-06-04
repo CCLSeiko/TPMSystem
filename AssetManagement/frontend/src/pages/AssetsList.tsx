@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, X } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, X, QrCode, Download } from 'lucide-react'
 import { listAssets, createAsset, updateAsset, deleteAsset } from '../api/assets'
 import { listCategories, getNextCode } from '../api/categories'
+import { getQRCodeImageUrl } from '../api/qrcode'
 import type { Asset, AssetCategory } from '../types'
 
 const statusColors: Record<string, string> = {
@@ -25,6 +26,7 @@ export default function AssetsList() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Asset | null>(null)
   const [form, setForm] = useState<Partial<Asset>>(emptyForm)
+  const [qrPreviewAsset, setQrPreviewAsset] = useState<Asset | null>(null)
 
   const load = () => {
     setLoading(true)
@@ -151,6 +153,7 @@ export default function AssetsList() {
                     {a.status === '報廢' ? (a.disposal_reason || '-') : '-'}
                   </td>
                   <td className="px-4 py-3 text-right">
+                    <button onClick={() => setQrPreviewAsset(a)} className="p-1 text-gray-400 hover:text-green-600" title="QR Code"><QrCode className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(a)} className="p-1 text-gray-400 hover:text-blue-600"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => handleDelete(a.id)} className="p-1 text-gray-400 hover:text-red-600 ml-1"><Trash2 className="w-4 h-4" /></button>
                   </td>
@@ -269,6 +272,41 @@ export default function AssetsList() {
               <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">取消</button>
               <button onClick={handleSave} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">儲存</button>
             </div>
+          </div>
+        </div>
+      )}
+      {qrPreviewAsset && (
+        <div
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+          onClick={() => setQrPreviewAsset(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getQRCodeImageUrl(qrPreviewAsset.id)}
+              alt={`QR Code ${qrPreviewAsset.asset_code}`}
+              className="w-56 h-56 mx-auto"
+            />
+            <div className="mt-4">
+              <div className="font-mono text-lg text-blue-600">{qrPreviewAsset.asset_code}</div>
+              <div className="text-gray-600 text-sm mt-1">{qrPreviewAsset.asset_name}</div>
+              <div className="text-xs text-gray-400 mt-1">{qrPreviewAsset.category} · {qrPreviewAsset.department}</div>
+            </div>
+            <button
+              onClick={() => {
+                const a = document.createElement('a')
+                a.href = getQRCodeImageUrl(qrPreviewAsset.id)
+                a.download = `qrcode_${qrPreviewAsset.asset_code}.png`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2 mx-auto"
+            >
+              <Download className="w-4 h-4" /> 下載 QR Code
+            </button>
           </div>
         </div>
       )}

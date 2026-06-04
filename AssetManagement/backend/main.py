@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from database import engine, Base, get_db
-from routers import assets, inventory, maintenance, staff, dashboard, categories
+from routers import assets, inventory, maintenance, staff, dashboard, categories, qrcode
 
 
 app = FastAPI(
@@ -28,6 +28,7 @@ app.include_router(maintenance.router, prefix="/api/maintenance", tags=["維修�
 app.include_router(staff.router, prefix="/api/staff", tags=["人員管理"])
 app.include_router(dashboard.router, prefix="/api", tags=["儀表板"])
 app.include_router(categories.router, prefix="/api/categories", tags=["資產類別"])
+app.include_router(qrcode.router)
 
 
 @app.on_event("startup")

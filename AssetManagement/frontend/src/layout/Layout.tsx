@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { Package, ClipboardList, Wrench, LayoutDashboard, Tags } from 'lucide-react'
+import { Package, ClipboardList, Wrench, LayoutDashboard, Tags, QrCode } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: '儀表板', icon: LayoutDashboard },
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/inventory', label: '盤點管理', icon: ClipboardList },
   { path: '/maintenance', label: '維修保養', icon: Wrench },
   { path: '/categories', label: '類別管理', icon: Tags },
+  { path: '/qrcode', label: 'QR Code', icon: QrCode },
 ]
 
 export default function Layout() {
