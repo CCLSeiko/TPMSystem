@@ -5,7 +5,7 @@ from typing import List
 
 from database import get_db
 from models import AssetCategory
-from schemas import CategoryCreate, CategoryResponse
+from schemas import CategoryCreate, CategoryResponse, PREFIX_LEN, YEAR_LEN
 
 router = APIRouter()
 
@@ -65,7 +65,10 @@ def get_next_code(category_id: int, db: Session = Depends(get_db)):
     if not cat:
         raise HTTPException(status_code=404, detail="類別不存在")
 
-    prefix = cat.prefix
+    prefix = cat.prefix.upper()
+    if len(prefix) != 4:
+        raise HTTPException(status_code=400, detail=f"前綴必須為 4 碼，目前為 {len(prefix)} 碼")
+
     year_suffix = str(__import__("datetime").date.today().year)[-2:]  # 西元年後兩碼
 
     # 找出該前綴+年份的最大現有編號
@@ -81,10 +84,14 @@ def get_next_code(category_id: int, db: Session = Depends(get_db)):
     ).scalar()
 
     if result:
-        # 提取流水號部分（跳過前綴4碼+年份2碼）
-        num = int(result[len(prefix) + 2:]) + 1
+        # 提取流水號部分（前 4 碼前綴 + 2 碼年份 = 6 碼，取後 6 碼）
+        serial_part = result[PREFIX_LEN + YEAR_LEN:]
+        num = int(serial_part) + 1
     else:
         num = 1
+
+    if num > 999999:
+        raise HTTPException(status_code=400, detail="該類別+年份的流水號已達上限 (999999)")
 
     next_code = f"{prefix}{year_suffix}{num:06d}"
     return {"prefix": prefix, "year": year_suffix, "next_code": next_code, "next_number": num}

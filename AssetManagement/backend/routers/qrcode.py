@@ -10,7 +10,7 @@ from models import Asset
 
 router = APIRouter(prefix="/api/qrcode", tags=["QR Code"])
 
-BASE_ASSET_URL = "http://192.168.31.57:3000/assets/"
+BASE_ASSET_URL = "http://192.168.0.189:3001/assets/"
 
 
 def _generate_qr_image(data: str, box_size: int = 8) -> BytesIO:

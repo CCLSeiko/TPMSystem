@@ -1,7 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, model_validator
 from typing import Optional
 from datetime import date, datetime
 from decimal import Decimal
+import re
+
+
+# 資產編號格式常數
+ASSET_CODE_LEN = 12          # 總長度: 前綴4 + 年份2 + 流水號6
+PREFIX_LEN = 4               # 前綴固定 4 碼
+YEAR_LEN = 2                 # 西元年後 2 碼
+SERIAL_LEN = 6               # 流水號 6 碼
+ASSET_CODE_PATTERN = re.compile(r"^[A-Z]{4}\d{2}\d{6}$")  # 4大寫英文字母+8碼數字
 
 
 # ==================== 資產類別 (Category) ====================
@@ -12,6 +21,16 @@ class CategoryBase(BaseModel):
     description: Optional[str] = None
     sort_order: int = 0
     is_active: bool = True
+
+    @field_validator("prefix")
+    @classmethod
+    def validate_prefix(cls, v: str) -> str:
+        v = v.strip().upper()
+        if len(v) != PREFIX_LEN:
+            raise ValueError(f"前綴必須為 {PREFIX_LEN} 碼大寫英文字母，目前為 {len(v)} 碼")
+        if not v.isalpha():
+            raise ValueError("前綴必須全部為英文字母")
+        return v
 
 class CategoryCreate(CategoryBase):
     pass
@@ -41,6 +60,23 @@ class AssetBase(BaseModel):
     status: str = "使用中"
     notes: Optional[str] = None
     disposal_reason: Optional[str] = None
+
+    @field_validator("asset_code")
+    @classmethod
+    def validate_asset_code(cls, v: str) -> str:
+        v = v.strip().upper()
+        if len(v) != ASSET_CODE_LEN:
+            raise ValueError(
+                f"資產編號必須為 {ASSET_CODE_LEN} 碼"
+                f"（{PREFIX_LEN}碼前綴 + {YEAR_LEN}碼年份 + {SERIAL_LEN}碼流水號），"
+                f"目前為 {len(v)} 碼"
+            )
+        if not ASSET_CODE_PATTERN.match(v):
+            raise ValueError(
+                "資產編號格式錯誤：前 4 碼須為大寫英文字母，後 8 碼須為數字"
+                f"（例：COMP26000001）"
+            )
+        return v
 
 class AssetCreate(AssetBase):
     pass
