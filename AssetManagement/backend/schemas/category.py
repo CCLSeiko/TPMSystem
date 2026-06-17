@@ -9,7 +9,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-from schemas.common import PREFIX_LEN
+from schemas.common import PREFIX_LEN, VALID_PREFIX_CHARS
 
 
 class CategoryBase(BaseModel):
@@ -28,6 +28,8 @@ class CategoryBase(BaseModel):
             raise ValueError(f"前綴必須為 {PREFIX_LEN} 碼大寫英文字母，目前為 {len(v)} 碼")
         if not v.isalpha():
             raise ValueError("前綴必須全部為英文字母")
+        if any(c in "IO" for c in v):
+            raise ValueError("前綴禁止使用字母 I 和 O（避免與數字 1, 0 混淆）")
         return v
 
 

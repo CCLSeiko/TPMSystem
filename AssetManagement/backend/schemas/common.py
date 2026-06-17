@@ -14,7 +14,9 @@ ASSET_CODE_LEN = 12            # 總長度: 前綴4 + 年份2 + 流水號6
 PREFIX_LEN = 4                 # 前綴固定 4 碼
 YEAR_LEN = 2                   # 西元年後 2 碼
 SERIAL_LEN = 6                 # 流水號 6 碼
-ASSET_CODE_PATTERN = re.compile(r"^[A-Z]{4}\d{2}\d{6}$")
+# 前綴禁止使用 I 和 O（避免與數字 1, 0 混淆）
+VALID_PREFIX_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+ASSET_CODE_PATTERN = re.compile(r"^[A-HJ-NP-Z]{4}\d{8}$")
 
 
 # ── 分頁共用 Schema ───────────────────────────────────

@@ -10,7 +10,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-from schemas.common import ASSET_CODE_LEN, ASSET_CODE_PATTERN, PREFIX_LEN, SERIAL_LEN, YEAR_LEN
+from schemas.common import ASSET_CODE_LEN, ASSET_CODE_PATTERN, PREFIX_LEN, SERIAL_LEN, YEAR_LEN, VALID_PREFIX_CHARS
 
 
 class AssetBase(BaseModel):
@@ -42,8 +42,8 @@ class AssetBase(BaseModel):
             )
         if not ASSET_CODE_PATTERN.match(v):
             raise ValueError(
-                "資產編號格式錯誤：前 4 碼須為大寫英文字母，後 8 碼須為數字"
-                f"（例：COMP26000001）"
+                "資產編號格式錯誤：前 4 碼須為大寫英文字母（不含 I、O），後 8 碼須為數字"
+                f"（例：CMPT26000001）"
             )
         return v
 

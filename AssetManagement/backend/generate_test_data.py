@@ -10,9 +10,9 @@ from database import SessionLocal
 # ============ 資料池 ============
 CATEGORIES = [
     ("電腦設備", ["Dell", "HP", "Lenovo", "ASUS"],
-     ["OptiPlex 7090", "ProBook 450 G10", "ThinkCentre M75s", "ExpertCenter D5"], "COMP"),
+     ["OptiPlex 7090", "ProBook 450 G10", "ThinkCentre M75s", "ExpertCenter D5"], "CMPT"),
     ("螢幕", ["Dell", "LG", "Samsung", "ASUS"],
-     ["U2723QE", "27UP850N", "S27A800", "ProArt PA278QV"], "DISP"),
+     ["U2723QE", "27UP850N", "S27A800", "ProArt PA278QV"], "DSPL"),
     ("伺服器", ["Dell", "HP", "Supermicro"],
      ["PowerEdge R750", "ProLiant DL380", "SYS-510T-M"], "SERV"),
     ("網路設備", ["Cisco", "MikroTik", "Ubiquiti"],
@@ -24,9 +24,9 @@ CATEGORIES = [
     ("空調設備", ["日立", "大金", "三菱電機"],
      ["RAS-50NF", "FTXV50SV", "MSZ-GE50VA"], "HVAC"),
     ("行動裝置", ["Apple", "Samsung", "ASUS"],
-     ["iPad Pro M4", "Galaxy Tab S9", "ZenPad 3S"], "MOBL"),
+     ["iPad Pro M4", "Galaxy Tab S9", "ZenPad 3S"], "MBLE"),
     ("視聽設備", ["Epson", "Sony", "JBL"],
-     ["EB-L730U", "WF-1000XM5", "Charge 5"], "AVEO"),
+     ["EB-L730U", "WF-1000XM5", "Charge 5"], "AVED"),
     ("安全設備", ["Hikvision", "Axis", "Dahua"],
      ["DS-2CD2386G2", "M3086-V", "IPC-HFW5842"], "SECU"),
 ]
