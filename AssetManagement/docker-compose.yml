@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ams_admin
       POSTGRES_PASSWORD: ams_secret_2024
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,24 +23,40 @@ services:
     container_name: ams-backend
     restart: unless-stopped
     ports:
-      - "8001:8000"
+      - "8002:8000"
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://ams_admin:ams_secret_2024@db:5432/asset_management
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ams_admin
+      DB_PASSWORD: ams_secret_2024
+      DB_NAME: asset_management
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/__pycache__
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   frontend:
     build: ./frontend
     container_name: ams-frontend
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "3002:80"
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:

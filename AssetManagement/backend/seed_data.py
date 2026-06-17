@@ -4,6 +4,7 @@
 """
 from sqlalchemy import text
 from database import SessionLocal
+from core.auth import hash_password
 
 
 SEED_CATEGORIES = [
@@ -47,24 +48,47 @@ def init_admin(db):
     if existing and existing > 0:
         print(f"  ⏭️  人員已存在，跳過")
         return
+
+    # 建立預設管理員帳號
+    admin_password = hash_password("admin123")
     db.execute(
         text(
-            "INSERT INTO staff (name, role, department, responsible_area) "
-            "VALUES (:name, :role, :dept, :area)"
+            "INSERT INTO staff (name, username, password_hash, role, department, responsible_area) "
+            "VALUES (:name, :username, :password_hash, :role, :dept, :area)"
         ),
-        {"name": "系統管理員", "role": "admin", "dept": "資訊部", "area": "全部"},
+        {
+            "name": "系統管理員",
+            "username": "admin",
+            "password_hash": admin_password,
+            "role": "admin",
+            "dept": "資訊部",
+            "area": "全部",
+        },
     )
-    # 也用資產管理.xlsx 的管理人員
+
+    # 建立測試帳號
+    operator_password = hash_password("operator123")
+    viewer_password = hash_password("viewer123")
     db.execute(
         text(
-            "INSERT INTO staff (name, role, department, responsible_area, phone, email) VALUES "
-            "('王大明', 'admin', '資訊部', '總部大樓A區', '0912-345-678', 'wang@company.com'),"
-            "('李小英', 'operator', '資訊部', '總部大樓B區', '0923-456-789', 'li@company.com'),"
-            "('張經理', 'viewer', '財務部', '全部', '0934-567-890', 'zhang@company.com')"
-        )
+            "INSERT INTO staff (name, username, password_hash, role, department, responsible_area, phone, email) VALUES "
+            "(:name1, :username1, :pwd1, 'operator', '資訊部', '總部大樓B區', '0923-456-789', 'operator@test.com'),"
+            "(:name2, :username2, :pwd2, 'viewer', '財務部', '全部', '0934-567-890', 'viewer@test.com')"
+        ),
+        {
+            "name1": "操作員",
+            "username1": "operator",
+            "pwd1": operator_password,
+            "name2": "檢視者",
+            "username2": "viewer",
+            "pwd2": viewer_password,
+        },
     )
     db.commit()
-    print("  ✅ 已匯入管理人員")
+    print("  ✅ 已匯入管理人員（含帳號密碼）")
+    print("     預設帳號：admin / admin123")
+    print("     測試帳號：operator / operator123")
+    print("     測試帳號：viewer / viewer123")
 
 
 if __name__ == "__main__":

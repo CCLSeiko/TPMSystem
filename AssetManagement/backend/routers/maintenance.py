@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+"""
+維修保養 API — 使用 MaintenanceService 處理業務邏輯
+"""
+
+from fastapi import APIRouter, Depends, status
 from typing import List
 
-from database import get_db
-from models import MaintenanceRecord
-from schemas import MaintenanceCreate, MaintenanceResponse
+from dependencies import get_maintenance_service
+from core.auth import get_current_user, require_permission
+from schemas.maintenance import MaintenanceCreate, MaintenanceResponse
+from services.maintenance_service import MaintenanceService
 
 router = APIRouter()
 
@@ -13,40 +17,35 @@ router = APIRouter()
 def list_maintenance(
     asset_id: int = None,
     maintenance_type: str = None,
-    db: Session = Depends(get_db),
+    svc: MaintenanceService = Depends(get_maintenance_service),
 ):
-    query = db.query(MaintenanceRecord)
-    if asset_id:
-        query = query.filter(MaintenanceRecord.asset_id == asset_id)
-    if maintenance_type:
-        query = query.filter(MaintenanceRecord.maintenance_type == maintenance_type)
-    return query.order_by(MaintenanceRecord.maintenance_date.desc()).all()
+    return svc.list_records(asset_id=asset_id, maintenance_type=maintenance_type)
 
 
 @router.get("/{record_id}", response_model=MaintenanceResponse)
-def get_maintenance(record_id: int, db: Session = Depends(get_db)):
-    record = db.query(MaintenanceRecord).filter(MaintenanceRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="維護紀錄不存在")
-    return record
+def get_maintenance(
+    record_id: int,
+    svc: MaintenanceService = Depends(get_maintenance_service),
+):
+    return svc.get_by_id(record_id)
 
 
-@router.post("/", response_model=MaintenanceResponse, status_code=201)
-def create_maintenance(data: MaintenanceCreate, db: Session = Depends(get_db)):
-    record = MaintenanceRecord(**data.model_dump())
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-    return record
+@router.post(
+    "/", response_model=MaintenanceResponse, status_code=status.HTTP_201_CREATED
+)
+def create_maintenance(
+    data: MaintenanceCreate,
+    svc: MaintenanceService = Depends(get_maintenance_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.create_record(data)
 
 
 @router.put("/{record_id}", response_model=MaintenanceResponse)
-def update_maintenance(record_id: int, data: MaintenanceCreate, db: Session = Depends(get_db)):
-    record = db.query(MaintenanceRecord).filter(MaintenanceRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="維護紀錄不存在")
-    for key, value in data.model_dump().items():
-        setattr(record, key, value)
-    db.commit()
-    db.refresh(record)
-    return record
+def update_maintenance(
+    record_id: int,
+    data: MaintenanceCreate,
+    svc: MaintenanceService = Depends(get_maintenance_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.update_record(record_id, data)

@@ -1,14 +1,21 @@
+"""
+儀表板 API — 統計資料
+"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func, text
+from sqlalchemy import text
 
 from database import get_db
+from core.auth import get_current_user
 
 router = APIRouter()
 
 
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+):
     """儀表板統計資料"""
     total_assets = db.execute(text("SELECT COUNT(*) FROM assets")).scalar() or 0
     total_inventory = db.execute(text("SELECT COUNT(*) FROM inventory_records")).scalar() or 0

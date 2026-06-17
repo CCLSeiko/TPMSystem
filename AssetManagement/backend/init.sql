@@ -7,7 +7,9 @@
 CREATE TABLE IF NOT EXISTS staff (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    role VARCHAR(20) NOT NULL DEFAULT 'operator',  -- admin / operator / viewer
+    username VARCHAR(50) UNIQUE NOT NULL,            -- 登入帳號
+    password_hash VARCHAR(255) NOT NULL,              -- 密碼雜湊
+    role VARCHAR(20) NOT NULL DEFAULT 'operator',    -- admin / operator / viewer
     department VARCHAR(100),
     responsible_area VARCHAR(200),
     phone VARCHAR(20),
@@ -98,8 +100,4 @@ CREATE INDEX idx_assets_status ON assets(status);
 CREATE INDEX idx_inventory_asset ON inventory_records(asset_id);
 CREATE INDEX idx_maintenance_asset ON maintenance_records(asset_id);
 CREATE INDEX idx_maintenance_next_date ON maintenance_records(next_maintenance_date);
-
--- 插入預設管理員
-INSERT INTO staff (name, role, department, responsible_area)
-VALUES ('系統管理員', 'admin', '資訊部', '全部')
-ON CONFLICT DO NOTHING;
+CREATE INDEX idx_staff_username ON staff(username);

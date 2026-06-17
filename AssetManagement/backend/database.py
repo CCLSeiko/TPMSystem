@@ -1,21 +1,10 @@
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+"""
+database.py（相容層）
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://ams_admin:ams_secret_2024@db:5432/asset_management",
-)
+為了讓現有 routers / models 不用全部立即改寫，
+此檔案保留原始名稱，但從新的 core.database 匯出。
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+逐步遷移完成後可移除此檔案。
+"""
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from core.database import Base, SessionLocal, engine, get_db  # noqa: F401

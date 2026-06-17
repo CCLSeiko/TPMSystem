@@ -1,97 +1,64 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import text
+"""
+資產類別 API — 使用 CategoryService 處理業務邏輯
+"""
+
+from fastapi import APIRouter, Depends, status
 from typing import List
 
-from database import get_db
-from models import AssetCategory
-from schemas import CategoryCreate, CategoryResponse, PREFIX_LEN, YEAR_LEN
+from dependencies import get_category_service
+from core.auth import get_current_user, require_permission
+from schemas.category import CategoryCreate, CategoryResponse
+from services.category_service import CategoryService
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[CategoryResponse])
-def list_categories(db: Session = Depends(get_db)):
-    return db.query(AssetCategory).order_by(AssetCategory.sort_order, AssetCategory.code).all()
+def list_categories(
+    svc: CategoryService = Depends(get_category_service),
+):
+    return svc.list_categories()
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-def get_category(category_id: int, db: Session = Depends(get_db)):
-    cat = db.query(AssetCategory).filter(AssetCategory.id == category_id).first()
-    if not cat:
-        raise HTTPException(status_code=404, detail="類別不存在")
-    return cat
+def get_category(
+    category_id: int,
+    svc: CategoryService = Depends(get_category_service),
+):
+    return svc.get_by_id(category_id)
 
 
-@router.post("/", response_model=CategoryResponse, status_code=201)
-def create_category(data: CategoryCreate, db: Session = Depends(get_db)):
-    existing = db.query(AssetCategory).filter(
-        (AssetCategory.code == data.code) | (AssetCategory.name == data.name)
-    ).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="類別代碼或名稱已存在")
-    cat = AssetCategory(**data.model_dump())
-    db.add(cat)
-    db.commit()
-    db.refresh(cat)
-    return cat
+@router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+def create_category(
+    data: CategoryCreate,
+    svc: CategoryService = Depends(get_category_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.create_category(data)
 
 
 @router.put("/{category_id}", response_model=CategoryResponse)
-def update_category(category_id: int, data: CategoryCreate, db: Session = Depends(get_db)):
-    cat = db.query(AssetCategory).filter(AssetCategory.id == category_id).first()
-    if not cat:
-        raise HTTPException(status_code=404, detail="類別不存在")
-    for key, value in data.model_dump().items():
-        setattr(cat, key, value)
-    db.commit()
-    db.refresh(cat)
-    return cat
+def update_category(
+    category_id: int,
+    data: CategoryCreate,
+    svc: CategoryService = Depends(get_category_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.update_category(category_id, data)
 
 
-@router.delete("/{category_id}", status_code=204)
-def delete_category(category_id: int, db: Session = Depends(get_db)):
-    cat = db.query(AssetCategory).filter(AssetCategory.id == category_id).first()
-    if not cat:
-        raise HTTPException(status_code=404, detail="類別不存在")
-    db.delete(cat)
-    db.commit()
+@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_category(
+    category_id: int,
+    svc: CategoryService = Depends(get_category_service),
+    current_user=Depends(require_permission("delete")),
+):
+    svc.delete_category(category_id)
 
 
 @router.get("/{category_id}/next-code")
-def get_next_code(category_id: int, db: Session = Depends(get_db)):
-    """根據類別前綴+年份產生下一個可用資產編號 (12碼: 前綴4+年份2+流水號6)"""
-    cat = db.query(AssetCategory).filter(AssetCategory.id == category_id).first()
-    if not cat:
-        raise HTTPException(status_code=404, detail="類別不存在")
-
-    prefix = cat.prefix.upper()
-    if len(prefix) != 4:
-        raise HTTPException(status_code=400, detail=f"前綴必須為 4 碼，目前為 {len(prefix)} 碼")
-
-    year_suffix = str(__import__("datetime").date.today().year)[-2:]  # 西元年後兩碼
-
-    # 找出該前綴+年份的最大現有編號
-    pattern = f"^{prefix}{year_suffix}\\d{{6}}$"
-    result = db.execute(
-        text("""
-            SELECT asset_code FROM assets
-            WHERE asset_code ~ :pattern
-            ORDER BY asset_code DESC
-            LIMIT 1
-        """),
-        {"pattern": pattern},
-    ).scalar()
-
-    if result:
-        # 提取流水號部分（前 4 碼前綴 + 2 碼年份 = 6 碼，取後 6 碼）
-        serial_part = result[PREFIX_LEN + YEAR_LEN:]
-        num = int(serial_part) + 1
-    else:
-        num = 1
-
-    if num > 999999:
-        raise HTTPException(status_code=400, detail="該類別+年份的流水號已達上限 (999999)")
-
-    next_code = f"{prefix}{year_suffix}{num:06d}"
-    return {"prefix": prefix, "year": year_suffix, "next_code": next_code, "next_number": num}
+def get_next_code(
+    category_id: int,
+    svc: CategoryService = Depends(get_category_service),
+):
+    return svc.generate_next_code(category_id)

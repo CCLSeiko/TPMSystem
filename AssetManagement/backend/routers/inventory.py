@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+"""
+盤點管理 API — 使用 InventoryService 處理業務邏輯
+"""
+
+from fastapi import APIRouter, Depends, status
 from typing import List
 
-from database import get_db
-from models import InventoryRecord
-from schemas import InventoryCreate, InventoryResponse
+from dependencies import get_inventory_service
+from core.auth import get_current_user, require_permission
+from schemas.inventory import InventoryCreate, InventoryResponse
+from services.inventory_service import InventoryService
 
 router = APIRouter()
 
@@ -13,40 +17,35 @@ router = APIRouter()
 def list_inventory(
     asset_id: int = None,
     status: str = None,
-    db: Session = Depends(get_db),
+    svc: InventoryService = Depends(get_inventory_service),
 ):
-    query = db.query(InventoryRecord)
-    if asset_id:
-        query = query.filter(InventoryRecord.asset_id == asset_id)
-    if status:
-        query = query.filter(InventoryRecord.status == status)
-    return query.order_by(InventoryRecord.inventory_date.desc()).all()
+    return svc.list_records(asset_id=asset_id, status=status)
 
 
 @router.get("/{record_id}", response_model=InventoryResponse)
-def get_inventory(record_id: int, db: Session = Depends(get_db)):
-    record = db.query(InventoryRecord).filter(InventoryRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="盤點紀錄不存在")
-    return record
+def get_inventory(
+    record_id: int,
+    svc: InventoryService = Depends(get_inventory_service),
+):
+    return svc.get_by_id(record_id)
 
 
-@router.post("/", response_model=InventoryResponse, status_code=201)
-def create_inventory(data: InventoryCreate, db: Session = Depends(get_db)):
-    record = InventoryRecord(**data.model_dump())
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-    return record
+@router.post(
+    "/", response_model=InventoryResponse, status_code=status.HTTP_201_CREATED
+)
+def create_inventory(
+    data: InventoryCreate,
+    svc: InventoryService = Depends(get_inventory_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.create_record(data)
 
 
 @router.put("/{record_id}", response_model=InventoryResponse)
-def update_inventory(record_id: int, data: InventoryCreate, db: Session = Depends(get_db)):
-    record = db.query(InventoryRecord).filter(InventoryRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="盤點紀錄不存在")
-    for key, value in data.model_dump().items():
-        setattr(record, key, value)
-    db.commit()
-    db.refresh(record)
-    return record
+def update_inventory(
+    record_id: int,
+    data: InventoryCreate,
+    svc: InventoryService = Depends(get_inventory_service),
+    current_user=Depends(require_permission("write")),
+):
+    return svc.update_record(record_id, data)
